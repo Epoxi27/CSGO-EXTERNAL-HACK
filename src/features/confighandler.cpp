@@ -7,7 +7,7 @@
 #include <fstream>
 #include <vector>
 #include "../utils/utils.h"
-
+#include "../features/skinchanger.h"
 
 std::vector<std::string>configparser(std::string input, std::string sep)
 {
@@ -220,8 +220,10 @@ bool confighandler::SaveConfig() {
 	rawdata += utils::toString(settings::visuals::esp::enemy::flagscolor[5][0]) + "|";
 	rawdata += utils::toString(settings::visuals::esp::enemy::flagscolor[5][1]) + "|";
 	rawdata += utils::toString(settings::visuals::esp::enemy::flagscolor[5][2]) + "|";
-	rawdata += utils::toString(settings::visuals::esp::enemy::flagscolor[5][3]);
+	rawdata += utils::toString(settings::visuals::esp::enemy::flagscolor[5][3]) + "|";
 
+
+	rawdata += utils::toString(settings::visuals::esp::enemy::showDormant) + "|";
 	
 	rawdata += "<visuals>";
 
@@ -239,6 +241,22 @@ bool confighandler::SaveConfig() {
 	rawdata += utils::toString(binds::bhop) + "|";
 	rawdata += "<misc>";
 
+
+
+	rawdata += "<skins>";
+	rawdata += utils::toString(settings::skinchanger::enable) + "|";
+	rawdata += "<skins>";
+	rawdata += "<inventory>";
+	rawdata += "<SKIN>";
+	for (SKIN &skin : skinchanger::inventory) {
+		
+		rawdata += utils::toString(skin.weaponID) + "|";
+		rawdata += utils::toString(skin.paint) + "|";
+		rawdata += utils::toString(skin.kills) + "|";
+		rawdata += utils::toString(skin.startrack) + "|";
+		rawdata += utils::toString(skin.wear) + "<SKIN>";
+	}
+	rawdata += "<inventory>";
 
 	cfg.open(directory_path, std::ios::out);
 
@@ -278,6 +296,11 @@ bool confighandler::LoadConfig() {
 	std::string legitbot = configparser(rawdata, "<legitbot>")[1];
 	std::string visuals = configparser(rawdata, "<visuals>")[1];
 	std::string misc = configparser(rawdata, "<misc>")[1];
+
+	std::string skins = configparser(rawdata, "<skins>")[1];
+
+	std::string inventory = configparser(rawdata, "<inventory>")[1];
+
 
 	// leigt bot
 	std::vector<std::string> data = configparser(legitbot, "|");
@@ -458,6 +481,7 @@ bool confighandler::LoadConfig() {
 	settings::visuals::esp::enemy::flagscolor[5][2] = utils::StringToFloat(data[counter++]);
 	settings::visuals::esp::enemy::flagscolor[5][3] = utils::StringToFloat(data[counter++]);
 	
+	settings::visuals::esp::enemy::showDormant = utils::StringToBool(data[counter++]);
 	// misc
 	data = configparser(misc, "|");
 
@@ -473,6 +497,32 @@ bool confighandler::LoadConfig() {
 	settings::misc::movement::bhop = utils::StringToBool(data[counter++]);
 	settings::misc::movement::hitchance = utils::StringToInt(data[counter++]);
 	binds::bhop = utils::StringToInt(data[counter++]);
+
+	//skins settings
+	data = configparser(skins, "<skins>");
+	
+	counter = 0;
+	
+	settings::skinchanger::enable = utils::StringToInt(data[counter++]);
+	
+	// inventory
+	data = configparser(inventory, "<SKIN>");
+	
+	skinchanger::inventory.clear();
+	for (int i = 1; i <= data.size() - 2; i++) {
+		counter = 0;
+		std::vector<std::string> skin_data = configparser(data[i	], "|");
+		
+		SKIN toadd;
+	
+		toadd.weaponID = utils::StringToInt(skin_data[counter++]);
+		toadd.paint = utils::StringToInt(skin_data[counter++]);
+		toadd.kills = utils::StringToInt(skin_data[counter++]);
+		toadd.startrack = utils::StringToBool(skin_data[counter++]);
+		toadd.wear = utils::StringToFloat(skin_data[counter++]);
+	
+		skinchanger::inventory.push_back(toadd);
+	}
 
 	return true;
 

@@ -109,10 +109,10 @@ WEAPON_CONFIG aim::GetWeaponConfig(int id) {
 		ret.priorityHitbox =	settings::aimbot::general::pistols::priority;
 		ret.hitboxes =			settings::aimbot::general::pistols::hitboxes;
 
-		ret.rcs =				0;
+		ret.rcs =				1;
 		ret.standalone =		0;
-		ret.x_amount =			0;
-		ret.y_amount =			0;
+		ret.x_amount =			100;
+		ret.y_amount =			100;
 		break;
 	default:
 		ret.delay =				0;
@@ -349,7 +349,7 @@ int original_size = 0;
 
 int AimbotStart = 0;
 
-
+float lastfire = 0;
 void aim::Run() {
 
 	
@@ -443,7 +443,8 @@ void aim::Run() {
 	}
 
 
-	if (settings::aimbot::general::fireEnabled) {
+	if (settings::aimbot::general::fireEnabled && lastfire + 0.03 < hack->globalvars.currentTime) {
+		lastfire = hack->globalvars.currentTime;
 		Status.last_target = target;
 		hack->LeftClick();	
 		Status.aimbotting = false;

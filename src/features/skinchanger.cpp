@@ -154,7 +154,11 @@ std::string skinchanger::GetSkinName(int id) {
 	return "ERROR";
 }
 
+
+
 void skinchanger::Run() {
+
+
 	std::array<uintptr_t, 8> weapons;
 	uintptr_t adr;
 
@@ -175,6 +179,9 @@ void skinchanger::Run() {
 		memory::Read<short>(weapon + offsets::iItemDefinitionIndex, &id);
 
 		bool shouldupdate = false;
+		bool shouldFORCEUPDATE = false;
+		std::int32_t a = -1;
+
 		for (SKIN& skin : inventory) {
 			if (skin.weaponID == id) {
 
@@ -183,24 +190,28 @@ void skinchanger::Run() {
 				shouldupdate = paint != skin.paint;
 
 				
-				std::int32_t desiredpaint = skin.paint;
-				std::int32_t a = -1;
-				float desiredfloat = skin.wear;
-				memory::Write<std::int32_t>(weapon + offsets::iItemIDHigh, &a);
+				if (shouldupdate) {
 
-				memory::Write<std::int32_t>(weapon + offsets::nFallbackPaintKit, &desiredpaint);
-				memory::Write<float>(weapon + offsets::flFallbackWear, &desiredfloat);
+					std::int32_t desiredpaint = skin.paint;
+					
+					float desiredfloat = skin.wear;
+					memory::Write<std::int32_t>(weapon + offsets::iItemIDHigh, &a);
+
+					memory::Write<std::int32_t>(weapon + offsets::nFallbackPaintKit, &desiredpaint);
+					memory::Write<float>(weapon + offsets::flFallbackWear, &desiredfloat);
+
+					std::int32_t deltaticksadr;
+					memory::Read<std::int32_t>(hack->engine + offsets::dwClientState, &deltaticksadr);
+					memory::Write<std::int32_t>(deltaticksadr + 0x174, &a);
+
+					
+				}
 				
 			}
 		}
+
+
+
 		
-		if (shouldupdate) {
-			std::int32_t deltaticksadr;
-			memory::Read<std::int32_t>(hack->engine + offsets::dwClientState, &deltaticksadr);
-
-			std::int32_t a = -1;
-
-			memory::Write<std::int32_t>(deltaticksadr + 0x174, &a);
-		}
 	}
 }

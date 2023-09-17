@@ -117,7 +117,7 @@ void gui::OnPaint(ImDrawList* draw) {
                 }
     
                 if (settings::visuals::esp::enemy::healthBar) {
-                    float DormantColorFloat[4] = {150 / 255, 150 / 255 , 150 / 255 , 150 / 255 };
+                    float DormantColorFloat[4] = {150.f / 255.f, 150.f / 255.f , 150.f / 255.f , 1.f };
                     visuals_hack::HealthBar(draw, player->Health(), top, bot, IsDormant ? DormantColorFloat : settings::visuals::esp::enemy::FullHealthBarColor, IsDormant ? DormantColorFloat : settings::visuals::esp::enemy::LowHealthBarColor);
                 }
     
@@ -146,23 +146,37 @@ void gui::OnPaint(ImDrawList* draw) {
                     std::vector<Vector2> rleg;
                     std::vector<Vector2> lleg;
                     
+                    bool onscreen = true;
                     for (int i = 0; i < hack->BODY.size(); i++) {
-                        Vector2 screen;
-                        hack->WorldToScreen(player->Bone(hack->BODY[i]), screen);
+                        Vector2 screen{ };
+                        if (!hack->WorldToScreen(player->Bone(hack->BODY[i]), screen)) {
+                            onscreen = false;
+                        }
                         body.push_back(screen);
                     }
                  
                     if (player->Team() == 3) {
                         for (int i = 0; i < 3; i++) {
                             Vector2 screen;
-                            hack->WorldToScreen(player->Bone(hack->CTRARM[i]), screen);
+                            if (!hack->WorldToScreen(player->Bone(hack->CTRARM[i]), screen)) {
+                                onscreen = false;
+                                
+                            }
                             rarm.push_back(screen);
-                            hack->WorldToScreen(player->Bone(hack->CTLARM[i]), screen);
+                            if (!hack->WorldToScreen(player->Bone(hack->CTLARM[i]), screen)) {
+                                onscreen = false;
+                            }
                             larm.push_back(screen);
-                            hack->WorldToScreen(player->Bone(hack->CTRLEG[i]), screen);
+                            if (!hack->WorldToScreen(player->Bone(hack->CTRLEG[i]), screen)) {
+                                onscreen = false;
+                                
+                            }
                             rleg.push_back(screen);
-                            hack->WorldToScreen(player->Bone(hack->CTLLEG[i]), screen);
+                            if (!hack->WorldToScreen(player->Bone(hack->CTLLEG[i]), screen)) {
+                                onscreen = false;
+                            }
                             lleg.push_back(screen);
+                            
                         }
     
                     }
@@ -179,7 +193,11 @@ void gui::OnPaint(ImDrawList* draw) {
                             lleg.push_back(screen);
                         }
                     }
-                    visuals_hack::Skeleton(draw, body, rarm, larm, rleg, lleg, IsDormant ? DormantColor : utils::FloatToImColor(settings::visuals::esp::enemy::skeletonColor), settings::visuals::esp::enemy::skeletonTickness);
+
+                    if (onscreen) {
+                        visuals_hack::Skeleton(draw, body, rarm, larm, rleg, lleg, IsDormant ? DormantColor : utils::FloatToImColor(settings::visuals::esp::enemy::skeletonColor), settings::visuals::esp::enemy::skeletonTickness);
+
+                    }
     
                 }
 
@@ -1064,7 +1082,7 @@ void gui::RenderMenu() {
 
                     if (controls::button("Load")) {
                         if (!confighandler::LoadConfig()) {
-                            console.push_back({ "[Error] Can't load " + configsnames[cfgselected], ImColor(200,100,100,255) });
+                            console.push_back({ "[ERROR] Can't load " + configsnames[cfgselected], ImColor(200,100,100,255) });
                         }
                         else {
 
@@ -1076,7 +1094,7 @@ void gui::RenderMenu() {
 
                     if (controls::button("Save")) {
                         if (!confighandler::SaveConfig()) {
-                            console.push_back({ "[Error] Can't save " + configsnames[cfgselected], ImColor(200,100,100,255) });
+                            console.push_back({ "[ERROR] Can't save " + configsnames[cfgselected], ImColor(200,100,100,255) });
                         }
                         else {
 
